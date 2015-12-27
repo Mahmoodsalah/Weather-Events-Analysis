@@ -1,0 +1,114 @@
+---
+title       : Impact of Severe Weather Events on public health and economy in the United States
+subtitle    : slides for Develope data product course
+author      : Mahmood Salah
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+
+
+## Overview
+
+```{r,echo=FALSE,cache=TRUE,results='hide',warning=FALSE}
+dta <- read.csv("data/repdata-data-StormData.csv",sep=",")
+tidydata <- dta[,c('EVTYPE','FATALITIES','INJURIES', 'PROPDMG', 'PROPDMGEXP', 'CROPDMG', 'CROPDMGEXP')]
+tidydata$PROPERTYDMG = 0
+
+tidydata[tidydata$PROPDMGEXP == "H", 'PROPERTYDMG'] = tidydata[tidydata$PROPDMGEXP == "H", 'PROPDMG'] * 10^2
+tidydata[tidydata$PROPDMGEXP == "K", 'PROPERTYDMG'] = tidydata[tidydata$PROPDMGEXP == "K", 'PROPDMG'] * 10^3
+tidydata[tidydata$PROPDMGEXP == "M", 'PROPERTYDMG'] = tidydata[tidydata$PROPDMGEXP == "M", 'PROPDMG'] * 10^6
+tidydata[tidydata$PROPDMGEXP == "B", 'PROPERTYDMG'] = tidydata[tidydata$PROPDMGEXP == "B", 'PROPDMG'] * 10^9
+tidydata$CROPDAMAGE <- 0 
+
+tidydata[tidydata$CROPDMGEXP == "H", 'CROPDAMAGE'] = tidydata[tidydata$CROPDMGEXP == "H", 'CROPDMG'] * 10^2
+tidydata[tidydata$CROPDMGEXP == "K", 'CROPDAMAGE'] = tidydata[tidydata$CROPDMGEXP == "K", 'CROPDMG'] * 10^3
+tidydata[tidydata$CROPDMGEXP == "M", 'CROPDAMAGE'] = tidydata[tidydata$CROPDMGEXP == "M", 'CROPDMG'] * 10^6
+tidydata[tidydata$CROPDMGEXP == "B", 'CROPDAMAGE'] = tidydata[tidydata$CROPDMGEXP == "B", 'CROPDMG'] * 10^9
+tidydata$EVTYPE <- toupper(tidydata$EVTYPE)
+evinj <- aggregate(INJURIES~EVTYPE,tidydata,sum)
+names(evinj) <- c("Event","Total_injuries")
+#sort the table of events by the total number of injuries (decreasing order)
+sort.evinj <- evinj[order(evinj$Total_injuries,decreasing = TRUE) , ]
+f <- sort.evinj[1,1]
+s <- sort.evinj[2,1]
+evfat <- aggregate(FATALITIES~EVTYPE,tidydata,sum)
+names(evfat) <- c("Event_Type","Total_FATALITIES")
+#sort the table of events by the total number of FATALITIES (decreasing order)
+sort.evfat <- evfat[order(evfat$Total_FATALITIES,decreasing = TRUE) , ]
+f1 <- sort.evfat[1,1]
+s1 <- sort.evfat[2,1]
+
+tidydata$FATorINJ <- tidydata$INJURIES + tidydata$FATALITIES
+sumall <- aggregate(FATorINJ~EVTYPE,tidydata,sum)
+names(sumall) <- c("Event_Type","FATALITIES_and_INJURIES")
+
+sort.sumall <- sumall[order(sumall$FATALITIES_and_INJURIES,decreasing = TRUE) , ]
+
+HEALTHt10 <- sort.sumall[1:10,]
+bigimpact <- HEALTHt10[1,1]
+#hidden just to appear in the Synopsis
+bigimpact <- HEALTHt10[1,1]
+bigimpact <- HEALTHt10[1,1]
+bigimpact5 <- HEALTHt10[2,1]
+bigimpact6 <- HEALTHt10[3,1]
+
+evprop <- aggregate(PROPERTYDMG~EVTYPE,tidydata,sum)
+names(evprop) <- c("Event_Type","Prop_DMG_Cost")
+sort.evprop <- evprop[order(evprop$Prop_DMG_Cost,decreasing = TRUE) , ]
+rownames(sort.evprop) <- NULL
+evcrop <- aggregate(CROPDAMAGE~EVTYPE,tidydata,sum)
+names(evcrop) <- c("Event_Type","Crop_DMG_Cost")
+sort.evcrop <- evcrop[order(evcrop$Crop_DMG_Cost,decreasing = TRUE) , ]
+rownames(sort.evcrop) <- NULL
+tidydata$EC.COSTS <- tidydata$PROPERTYDMG + tidydata$CROPDAMAGE
+sumall2 <- aggregate(EC.COSTS~EVTYPE,tidydata,sum)
+names(sumall2) <- c("Event_Type","Proppert.Corp_damage")
+sort.sumall2 <- sumall2[order(sumall2$Proppert.Corp_damage,decreasing = TRUE) , ]
+ECONOMYt10 <- sort.sumall2[1:10,]
+bigimpact2 <- ECONOMYt10[1,1]
+
+#hidden just to appear in the Synopsis
+bigimpact2 <- ECONOMYt10[1,1]
+bigimpact7 <- ECONOMYt10[2,1]
+bigimpact8 <- ECONOMYt10[3,1]
+```
+
+In this report we aim to describe/analyze  the impact of different weather events on public health and economy based on the storm database collected from the U.S. National Oceanic and Atmospheric Administration's (NOAA) from 1950 - 2011. We will use the estimates of fatalities, injuries, property and crop damage to decide which types of event are most harmful to the population health and economy.From these data, we found that "**`r bigimpact `**" , "**`r bigimpact5 `**" and "**`r  bigimpact6 `**" are most harmful with respect to population health, while "**`r bigimpact2 `**", "**`r bigimpact7 `**"" and "**`r bigimpact8 `**"" have the greatest economic consequences.
+
+---
+
+## Population health
+Across the United States,event types that are most harmful with respect to population health:
+- The biggest event type lead to FATALITIES is "**`r f1`**" and the second one is "**`r s1`**".
+- The biggest event type lead to INJURIES is "**`r f`**" and the second one is "**`r s`**".
+
+---
+
+## Economic consequences
+Across the United States, types of events that have the greatest economic consequences:
+- Based on the above histograms, we see that "**`r bigimpact2`**" have the greatest economic consequences.
+
+---
+## Histogram between event types and their total number of FATALITIES and INJURIES 
+
+```{r,echo=FALSE,warning=FALSE}
+# import ggplot2 library to plot the result
+
+library(ggplot2)
+
+#draw Histogram
+ggplot(HEALTHt10, aes(x = Event_Type, y = FATALITIES_and_INJURIES))+
+        geom_bar(stat = "identity",fill="indianred2",colour="indianred4")+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1,size=12))+
+        xlab("Event Type") + ylab("Fatalities and Injuries")+
+        ggtitle("Number of Fatalities and Injuries by top 10 Weather Events")
+
+
+```
+
